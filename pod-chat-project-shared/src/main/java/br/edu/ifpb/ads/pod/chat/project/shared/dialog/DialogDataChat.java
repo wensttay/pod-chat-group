@@ -27,4 +27,7 @@ public interface DialogDataChat extends DialogData<Chat> {
 
     public void unsubscribe(String userId, String chatId) 
             throws RemoteException;
+    
+    public void unsubscribeByUser(String id)
+            throws RemoteException;
 }

@@ -10,6 +10,11 @@ import java.util.List;
  * @author Wensttay de Sousa Alencar <yattsnew@gmail.com>
  * @date 18/05/2017, 04:44:04
  */
+
+//
+// LEMBRAR DE TRAZER APENSA AS QUE AINDA N FORAM VISUALIZADAS
+//
+
 public class DialogDataNotificationDBImpl implements DialogDataNotification {
 
     @Override
@@ -17,7 +22,7 @@ public class DialogDataNotificationDBImpl implements DialogDataNotification {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
+    @Override 
     public List<Notification> listNotificationByUser(String userId) throws RemoteException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

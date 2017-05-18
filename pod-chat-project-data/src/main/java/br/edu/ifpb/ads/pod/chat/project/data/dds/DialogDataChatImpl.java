@@ -3,7 +3,6 @@ package br.edu.ifpb.ads.pod.chat.project.data.dds;
 import br.edu.ifpb.ads.pod.chat.project.shared.dialog.DialogDataChat;
 import br.edu.ifpb.ads.pod.chat.project.shared.entity.Chat;
 import br.edu.ifpb.ads.pod.chat.project.shared.exeption.FailToPrepareTransationException;
-import br.edu.ifpb.ads.pod.chat.project.shared.exeption.NotExistChatExeption;
 import br.edu.ifpb.ads.pod.chat.project.shared.exeption.OfflineDialogDataWorker;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -20,11 +19,9 @@ import java.util.Map;
 public class DialogDataChatImpl extends UnicastRemoteObject implements DialogDataChat {
 
     private Map<String, DialogDataChat> dialogDataChats;
-    private boolean isPrepared;
 
     public DialogDataChatImpl() throws RemoteException {
         dialogDataChats = new HashMap<>();
-        isPrepared = false;
     }
 
     @Override
@@ -44,6 +41,7 @@ public class DialogDataChatImpl extends UnicastRemoteObject implements DialogDat
 
     @Override
     public List<String> listChatByUser(String userId) throws RemoteException {
+
         for (DialogDataChat value : dialogDataChats.values()) {
             try {
                 return value.listChatByUser(userId);
@@ -71,16 +69,17 @@ public class DialogDataChatImpl extends UnicastRemoteObject implements DialogDat
             System.out.println("Exeption duranting subscribe a User on Chat");
             return false;
         }
-        
+
         return true;
     }
 
     @Override
     public void unsubscribe(String userId, String chatId) throws RemoteException {
+
         prepare();
         try {
             for (DialogDataChat value : dialogDataChats.values()) {
-                value.subscribe(userId, chatId);
+                value.unsubscribe(userId, chatId);
             }
             commit();
         } catch (Exception ex) {
@@ -92,9 +91,8 @@ public class DialogDataChatImpl extends UnicastRemoteObject implements DialogDat
 
     @Override
     public Chat persist(Chat object) throws RemoteException {
-        
+
         prepare();
-        
         Chat chat = null;
         try {
             for (DialogDataChat value : dialogDataChats.values()) {
@@ -107,13 +105,13 @@ public class DialogDataChatImpl extends UnicastRemoteObject implements DialogDat
             System.out.println("Exeption duranting unsubcribe a User on Chat");
             return null;
         }
-        
+
         return chat;
     }
 
     @Override
     public Chat find(String id) throws RemoteException {
-                
+
         for (DialogDataChat value : dialogDataChats.values()) {
             try {
                 return value.find(id);
@@ -123,13 +121,13 @@ public class DialogDataChatImpl extends UnicastRemoteObject implements DialogDat
             }
         }
 
-        throw new NotExistChatExeption();
+        throw new OfflineDialogDataWorker();
     }
 
     @Override
     public void remove(String id) throws RemoteException {
+
         prepare();
-        
         try {
             for (DialogDataChat value : dialogDataChats.values()) {
                 value.remove(id);
@@ -140,12 +138,12 @@ public class DialogDataChatImpl extends UnicastRemoteObject implements DialogDat
             ex.printStackTrace();
             System.out.println("Exeption duranting unsubcribe a User on Chat");
         }
-        
+
     }
 
     @Override
     public List<Chat> listAll() throws RemoteException {
-        
+
         for (DialogDataChat value : dialogDataChats.values()) {
             try {
                 return value.listAll();
@@ -159,12 +157,28 @@ public class DialogDataChatImpl extends UnicastRemoteObject implements DialogDat
     }
 
     @Override
+    public void unsubscribeByUser(String id) throws RemoteException {
+        prepare();
+        try {
+            for (DialogDataChat value : dialogDataChats.values()) {
+                value.unsubscribeByUser(id);
+            }
+            commit();
+        } catch (Exception ex) {
+            rollback();
+            ex.printStackTrace();
+            System.out.println("Exeption duranting unsubcribe a User on Chat");
+        }
+    }
+
+    @Override
     public void prepare() throws RemoteException {
         try {
             for (DialogDataChat value : dialogDataChats.values()) {
                 value.prepare();
             }
         } catch (RemoteException ex) {
+            rollback();
             throw new FailToPrepareTransationException();
         }
     }
@@ -194,5 +208,4 @@ public class DialogDataChatImpl extends UnicastRemoteObject implements DialogDat
     public DialogDataChat removeDialogDataChat(String key) {
         return dialogDataChats.remove(key);
     }
-
 }

@@ -53,6 +53,11 @@ public class DialogDataChatGDImpl implements DialogDataChat {
     }
 
     @Override
+    public void unsubscribeByUser(String id) throws RemoteException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
     public void prepare() throws RemoteException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

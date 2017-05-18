@@ -53,6 +53,10 @@ public class Main {
             dialogDataNotification.addDialogDataChat("txt", dataNotificationTXT);
             dialogDataNotification.addDialogDataChat("dropBox", dataNotificationDB);
             
+            dialogDataUser.setDialogDataChatImpl(dialogDataChat);
+            dialogDataUser.setDialogDataMessageImpl(dialogDataMessage);
+            dialogDataUser.setDialogDataNotificationImpl(dialogDataNotification);
+            
             Registry registry = LocateRegistry.getRegistry(PORT_DATA);
             
             registry.bind(DIALOG_DATA_USER, dialogDataUser);
