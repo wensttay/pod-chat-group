@@ -2,29 +2,72 @@ package br.edu.ifpb.ads.pod.chat.project.client;
 
 import br.edu.ifpb.ads.pod.chat.project.shared.dialog.DialogClient;
 import br.edu.ifpb.ads.pod.chat.project.shared.dialog.DialogServer;
+import br.edu.ifpb.ads.pod.chat.project.shared.entity.Message;
 import br.edu.ifpb.ads.pod.chat.project.shared.entity.Notification;
 import br.edu.ifpb.ads.pod.chat.project.shared.entity.User;
+import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  *
  * @author Wensttay de Sousa Alencar <yattsnew@gmail.com>
  * @date 17/05/2017, 22:49:13
  */
-public class ChatAdministrator implements DialogClient, Runnable {
+public class ChatAdministrator extends UnicastRemoteObject
+        implements Serializable, DialogClient {
 
-    private final List<ChatFull> chatsFull;
-    private final DialogServer dialogServer;
-    private final User loggedUser;
+    private List<ChatFull> chatsFull;
+    private List<Message> offlineMessages;
+    private DialogServer dialogServer;
+    private User loggedUser;
+    private boolean isLooged;
 
-    public ChatAdministrator(DialogServer dialogServer, User loggedUser) throws RemoteException {
-        this.dialogServer = dialogServer;
-        this.loggedUser = loggedUser;
+    public ChatAdministrator() throws RemoteException {
+    }
+
+    public ChatAdministrator(boolean isLooged) throws RemoteException {
         chatsFull = new ArrayList<>();
-        reloadChatsFull();
+        offlineMessages = new ArrayList<>();
+        isLooged = isLooged;
+    }
+
+    @Override
+    public void notify(Notification n) throws RemoteException {
+
+        ChatFull chatFull = findById(n.getMessage().getChatId());
+
+        if (chatFull != null) {
+            chatFull.addNotification(n);
+        }
+
+    }
+
+    @Override
+    public boolean ping() throws RemoteException {
+        // Only to test connection already registred
+        return true;
+    }
+
+    public void sendMessage(String text, String chatId) {
+        Message message = new Message(System.currentTimeMillis(),
+                text, loggedUser.getLogin(), chatId);
+        try {
+            dialogServer.publish(message);
+
+            ChatFull findById = findById(chatId);
+            findById.addMessage(message);
+        } catch (RemoteException ex) {
+            ex.printStackTrace();
+
+            System.out.println("ERRO MEU: ADD TO OFFLINE MENSAGE LIST");
+            offlineMessages.add(message);
+        }
     }
 
     public ChatFull findById(String chatId) {
@@ -36,24 +79,33 @@ public class ChatAdministrator implements DialogClient, Runnable {
         return null;
     }
 
-    private void reloadChatsFull() throws RemoteException {
-        String login = loggedUser.getLogin();
-        List<String> allCs = dialogServer.listChats();
-        List<String> myCs = dialogServer.listChatsByUser(login);
+    public void reloadChatsFull() {
+        try {
+            if (loggedUser != null) {
+                String login = loggedUser.getLogin();
+                List<String> allCs = dialogServer.listChats();
+                List<String> myCs = dialogServer.listChatsByUser(login);
 
-        for (String cs : allCs) {
-            if (findById(cs) == null) {
-                ChatFull csf = new ChatFull(cs);
-                
-                if (myCs.contains(cs)) {
-                    csf.setSubcribed(true);
-                    
-                    csf.addAllMessages(dialogServer.listMessagesByUserChat(login, cs));
-                    csf.addAllNotifications(dialogServer.listNotificationsByUserChat(login, cs));
+                for (String cs : allCs) {
+                    if (findById(cs) == null) {
+                        ChatFull csf = new ChatFull(cs);
+
+                        if (myCs.contains(cs)) {
+                            csf.setSubcribed(true);
+
+                            csf.addAllMessages(dialogServer.listMessagesByUserChat(login, cs));
+                            csf.addAllNotifications(dialogServer.listNotificationsByUserChat(login, cs));
+                        }
+
+                        chatsFull.add(csf);
+                    }
                 }
-
-                chatsFull.add(csf);
+            } else {
+                System.out.println("Usuario ainda tá null mano?");
             }
+        } catch (RemoteException ex) {
+            ex.printStackTrace();
+            System.out.println("ERRO MEU: AO DAR RELOAD NOS CHATS");
         }
     }
 
@@ -97,31 +149,31 @@ public class ChatAdministrator implements DialogClient, Runnable {
         }
     }
 
-    @Override
-    public void notify(Notification n) throws RemoteException {
-
-        ChatFull chatFull = findById(n.getMessage().getChatId());
-
-        if (chatFull != null) {
-            chatFull.addNotification(n);
-        }
-
+    public List<ChatFull> getChatsFull() {
+        return Collections.unmodifiableList(chatsFull);
     }
 
-    @Override
-    public boolean ping() throws RemoteException {
-        // Only to test connection already registred
-        return true;
+    public DialogServer getDialogServer() {
+        return dialogServer;
     }
 
-    @Override
-    public void run() {
-        try {
-            reloadChatsFull();
-        } catch (RemoteException ex) {
-            ex.printStackTrace();
-            System.out.println("ERRO MEU: AO DAR RELOAD NOS CHATS");
-        }
+    public void setDialogServer(DialogServer dialogServer) {
+        this.dialogServer = dialogServer;
     }
 
+    public User getLoggedUser() {
+        return loggedUser;
+    }
+
+    public void setLoggedUser(User loggedUser) {
+        this.loggedUser = loggedUser;
+    }
+
+    public List<Message> getOfflineMessages() {
+        return Collections.unmodifiableList(offlineMessages);
+    }
+
+    public void removeOfflineMessage(Message m) {
+        offlineMessages.remove(m);
+    }
 }

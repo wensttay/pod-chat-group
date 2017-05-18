@@ -113,4 +113,10 @@ public class ChatFull implements Comparable<ChatFull> {
         this.subcribed = subcribed;
     }
 
+    @Override
+    public String toString() {
+        return "-> " + name + (subcribed == true ? "(" + getNotificationCount() + " News)": "(Unsubscribed)");
+    }
+
+    
 }
