@@ -41,7 +41,6 @@ public class ChatAdministrator extends UnicastRemoteObject
     public void notify(Notification n) throws RemoteException {
 
         ChatFull chatFull = findById(n.getMessage().getChatId());
-
         if (chatFull != null) {
             chatFull.addNotification(n);
         }
@@ -50,8 +49,11 @@ public class ChatAdministrator extends UnicastRemoteObject
 
     @Override
     public boolean ping() throws RemoteException {
-        // Only to test connection already registred
-        return true;
+        if (isLooged) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void sendMessage(String text, String chatId) {

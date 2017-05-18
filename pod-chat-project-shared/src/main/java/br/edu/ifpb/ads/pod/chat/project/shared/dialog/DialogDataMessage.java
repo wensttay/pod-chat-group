@@ -19,10 +19,10 @@ public interface DialogDataMessage extends DialogData<Message> {
     public void removeByUser(String userId) 
             throws RemoteException;
 
-    public List<Message> listByUser(String userId) 
+    public List<Message> listMessageByUser(String userId) 
             throws RemoteException;
     
-    public List<Message> listByUserChat(String userId, String chatId)
+    public List<Message> listMessageByUserChat(String userId, String chatId)
             throws RemoteException;
     
 }

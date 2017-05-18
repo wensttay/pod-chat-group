@@ -19,10 +19,10 @@ public interface DialogDataNotification extends DialogData<Notification> {
     public void removeByUser(String userId) 
             throws RemoteException;
 
-    public List<Notification> listByUser(String userId) 
+    public List<Notification> listNotificationByUser(String userId) 
             throws RemoteException;
     
-    public List<Notification> listByUserChat(String userId, String chatId) 
+    public List<Notification> listNotificationByUserChat(String userId, String chatId) 
             throws RemoteException;
     
     public void setAlreadyDelivered(String notificationId)

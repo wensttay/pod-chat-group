@@ -59,4 +59,6 @@ public interface DialogServer extends Remote {
     public void setAlreadyDelivered(String notificationId)
             throws RemoteException;
 
+    public void notifyAllSubscribers()
+            throws RemoteException;
 }

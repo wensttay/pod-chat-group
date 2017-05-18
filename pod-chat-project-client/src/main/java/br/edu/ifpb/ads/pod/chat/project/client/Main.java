@@ -1,5 +1,6 @@
 package br.edu.ifpb.ads.pod.chat.project.client;
 
+import static br.edu.ifpb.ads.pod.chat.project.shared.dialog.Configs.*;
 import br.edu.ifpb.ads.pod.chat.project.shared.dialog.DialogServer;
 import br.edu.ifpb.ads.pod.chat.project.shared.entity.Message;
 import br.edu.ifpb.ads.pod.chat.project.shared.entity.Notification;
@@ -14,8 +15,6 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -31,14 +30,14 @@ public class Main {
     public static boolean isLogged = false;
     public static Timer tryUpdateChats = new Timer();
     public static Timer trySendOfflineMessages = new Timer();
-
+    public static Scanner s = new Scanner(System.in);
+    
     public static void main(String[] args) {
-
+        
         try {
-            Registry registry = LocateRegistry.getRegistry(10999);
-            dialogServer = (DialogServer) registry.lookup("DIALOG_SERVER");
+            Registry registry = LocateRegistry.getRegistry(PORT_SERVER);
+            dialogServer = (DialogServer) registry.lookup(DIALOG_SERVER);
             startApp();
-
         } catch (RemoteException | NotBoundException ex) {
             ex.printStackTrace();
             System.out.println("ERRO MEU: erro ao se connectar ao servidor.");
@@ -47,11 +46,11 @@ public class Main {
     }
 
     public static void startApp() throws RemoteException {
+        System.out.println("Iniciando Cliente APP ... ");
+        
         while (isRunning) {
-
             chatAdministrator = new ChatAdministrator(isLogged);
             chatAdministrator.setDialogServer(dialogServer);
-
             trySendOfflineMessages.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -61,6 +60,7 @@ public class Main {
                         
                         if (!offlineMessages.isEmpty()) {
                             try {
+                                dialogServer.ping();
                                 for (Message m : offlineMessages) {
                                     dialogServer.publish(m);
                                     chatAdministrator.removeOfflineMessage(m);
@@ -72,7 +72,6 @@ public class Main {
                     }
                 }
             }, 1000, 1000);
-
             tryUpdateChats.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -81,7 +80,8 @@ public class Main {
                     }
                 }
             }, 1000, 1000);
-
+            isRunning = true;
+        
             int mainViewAnswer = startMainVeiw();
             switch (mainViewAnswer) {
                 case 1:
@@ -100,8 +100,7 @@ public class Main {
 
     private static int startMainVeiw() {
         int answer = 0;
-        Scanner s = new Scanner(System.in);
-
+        
         while (true) {
             System.out.println("Selecione uma das opções: ");
             System.out.println("1 - Efetuar Login");
@@ -121,7 +120,7 @@ public class Main {
     }
 
     private static void startloginView() {
-        Scanner s = new Scanner(System.in);
+
         String login = "";
         String senha = "";
 
@@ -149,7 +148,7 @@ public class Main {
     }
 
     private static void startCadastroView() {
-        Scanner s = new Scanner(System.in);
+        
         String login = "";
         String senha = "";
 
@@ -174,39 +173,31 @@ public class Main {
 
     private static void startLoggedView() {
 
-        Scanner s = new Scanner(System.in);
-
         while (isLogged) {
-            try {
-                System.out.println("Selecione uma das opções: ");
-                System.out.println("1 - Entrar em um Chat");
-                System.out.println("2 - Deletar conta");
-                System.out.println("3 - Deslogar");
-                System.out.print("> ");
-                int answer = s.nextInt();
-                switch (answer) {
-                    case 1:
-                        startChatListView();
-                        break;
-                    case 2:
-                        startDeletarAccountView();
-                        break;
-                    case 3:
-                        isLogged = false;
-                        tryUpdateChats.cancel();
-                        break;
-                    default:
-                        System.out.println("Opção inexistente porfavor escolha outra");
-                }
-            } catch (RemoteException ex) {
-                ex.printStackTrace();
-                System.out.println("ERRO MEU: Erro na tela Logada de opções");
+            System.out.println("Selecione uma das opções: ");
+            System.out.println("1 - Entrar em um Chat");
+            System.out.println("2 - Deletar conta");
+            System.out.println("3 - Deslogar");
+            System.out.print("> ");
+            int answer = s.nextInt();
+            switch (answer) {
+                case 1:
+                    startChatListView();
+                    break;
+                case 2:
+                    startDeletarAccountView();
+                    break;
+                case 3:
+                    isLogged = false;
+                    tryUpdateChats.cancel();
+                    break;
+                default:
+                    System.out.println("Opção inexistente porfavor escolha outra");
             }
         }
     }
 
     private static void startChatListView() {
-        Scanner s = new Scanner(System.in);
 
         while (isLogged) {
             System.out.println("Lista de Chats:");
@@ -251,7 +242,6 @@ public class Main {
 
         System.out.println("Digite algo e precione enter para enviar"
                 + " ou '/breck' para voltar ao menu anterior:");
-        Scanner s = new Scanner(System.in);
 
         while (true) {
             String nextLine = s.nextLine();
@@ -264,7 +254,6 @@ public class Main {
     }
 
     private static void startDeletarAccountView(){
-        Scanner s = new Scanner(System.in);
 
         while (isLogged) {
             System.out.println("Tela de confirmação de exclusão de conta: ");

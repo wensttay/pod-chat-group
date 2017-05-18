@@ -15,13 +15,16 @@ import java.util.List;
  * @date 17/05/2017, 19:27:37
  */
 public interface DialogDataChat extends DialogData<Chat> {
-
-    public List<Chat> listByUser(String userId) 
+    
+    public List<String> listChatAllIds()
+            throws RemoteException;
+    
+    public List<String> listChatByUser(String userId) 
             throws RemoteException;
 
     public boolean subscribe(String userId, String chatId) 
             throws RemoteException;
 
-    public void unsubscribe(String userId) 
+    public void unsubscribe(String userId, String chatId) 
             throws RemoteException;
 }
