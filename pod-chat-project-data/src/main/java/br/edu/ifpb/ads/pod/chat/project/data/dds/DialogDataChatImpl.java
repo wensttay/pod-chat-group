@@ -2,6 +2,9 @@ package br.edu.ifpb.ads.pod.chat.project.data.dds;
 
 import br.edu.ifpb.ads.pod.chat.project.shared.dialog.DialogDataChat;
 import br.edu.ifpb.ads.pod.chat.project.shared.entity.Chat;
+import br.edu.ifpb.ads.pod.chat.project.shared.exeption.FailToPrepareTransationException;
+import br.edu.ifpb.ads.pod.chat.project.shared.exeption.NotExistChatExeption;
+import br.edu.ifpb.ads.pod.chat.project.shared.exeption.OfflineDialogDataWorker;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collections;
@@ -15,66 +18,169 @@ import java.util.Map;
  * @date 18/05/2017, 04:25:31
  */
 public class DialogDataChatImpl extends UnicastRemoteObject implements DialogDataChat {
-    
-    Map<String, DialogDataChat> dialogDataChats;
-    
+
+    private Map<String, DialogDataChat> dialogDataChats;
+    private boolean isPrepared;
+
     public DialogDataChatImpl() throws RemoteException {
         dialogDataChats = new HashMap<>();
+        isPrepared = false;
     }
 
     @Override
     public List<String> listChatAllIds() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+        for (DialogDataChat value : dialogDataChats.values()) {
+            try {
+                return value.listChatAllIds();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                System.out.println("Exeption duranting listChat");
+            }
+        }
+
+        throw new OfflineDialogDataWorker();
     }
 
     @Override
     public List<String> listChatByUser(String userId) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for (DialogDataChat value : dialogDataChats.values()) {
+            try {
+                return value.listChatByUser(userId);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                System.out.println("Exeption duranting listChatByUser");
+            }
+        }
+
+        throw new OfflineDialogDataWorker();
     }
 
     @Override
     public boolean subscribe(String userId, String chatId) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+        prepare();
+        try {
+            for (DialogDataChat value : dialogDataChats.values()) {
+                value.subscribe(userId, chatId);
+            }
+            commit();
+        } catch (Exception ex) {
+            rollback();
+            ex.printStackTrace();
+            System.out.println("Exeption duranting subscribe a User on Chat");
+            return false;
+        }
+        
+        return true;
     }
 
     @Override
     public void unsubscribe(String userId, String chatId) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        prepare();
+        try {
+            for (DialogDataChat value : dialogDataChats.values()) {
+                value.subscribe(userId, chatId);
+            }
+            commit();
+        } catch (Exception ex) {
+            rollback();
+            ex.printStackTrace();
+            System.out.println("Exeption duranting unsubcribe a User on Chat");
+        }
     }
 
     @Override
     public Chat persist(Chat object) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        prepare();
+        
+        Chat chat = null;
+        try {
+            for (DialogDataChat value : dialogDataChats.values()) {
+                chat = value.persist(object);
+            }
+            commit();
+        } catch (Exception ex) {
+            rollback();
+            ex.printStackTrace();
+            System.out.println("Exeption duranting unsubcribe a User on Chat");
+            return null;
+        }
+        
+        return chat;
     }
 
     @Override
     public Chat find(String id) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                
+        for (DialogDataChat value : dialogDataChats.values()) {
+            try {
+                return value.find(id);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                System.out.println("Exeption duranting listChat");
+            }
+        }
+
+        throw new NotExistChatExeption();
     }
 
     @Override
     public void remove(String id) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        prepare();
+        
+        try {
+            for (DialogDataChat value : dialogDataChats.values()) {
+                value.remove(id);
+            }
+            commit();
+        } catch (Exception ex) {
+            rollback();
+            ex.printStackTrace();
+            System.out.println("Exeption duranting unsubcribe a User on Chat");
+        }
+        
     }
 
     @Override
     public List<Chat> listAll() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        for (DialogDataChat value : dialogDataChats.values()) {
+            try {
+                return value.listAll();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                System.out.println("Exeption duranting listChat");
+            }
+        }
+
+        throw new OfflineDialogDataWorker();
     }
 
     @Override
     public void prepare() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            for (DialogDataChat value : dialogDataChats.values()) {
+                value.prepare();
+            }
+        } catch (RemoteException ex) {
+            throw new FailToPrepareTransationException();
+        }
     }
 
     @Override
     public void commit() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for (DialogDataChat value : dialogDataChats.values()) {
+            value.commit();
+        }
     }
 
     @Override
-    public void callback() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void rollback() throws RemoteException {
+        for (DialogDataChat value : dialogDataChats.values()) {
+            value.rollback();
+        }
     }
 
     public Map<String, DialogDataChat> getDialogDataChats() {
@@ -84,8 +190,8 @@ public class DialogDataChatImpl extends UnicastRemoteObject implements DialogDat
     public DialogDataChat addDialogDataChat(String key, DialogDataChat dialogDataChat) {
         return dialogDataChats.put(key, dialogDataChat);
     }
-    
-    public DialogDataChat removeDialogDataChat(String key){
+
+    public DialogDataChat removeDialogDataChat(String key) {
         return dialogDataChats.remove(key);
     }
 

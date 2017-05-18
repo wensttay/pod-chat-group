@@ -21,6 +21,6 @@ public interface Transationable {
     public void commit() 
             throws RemoteException;
     
-    public void callback() 
+    public void rollback() 
             throws RemoteException;
 }

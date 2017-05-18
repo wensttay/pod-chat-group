@@ -63,7 +63,7 @@ public class DialogDataChatGDImpl implements DialogDataChat {
     }
 
     @Override
-    public void callback() throws RemoteException {
+    public void rollback() throws RemoteException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

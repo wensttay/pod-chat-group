@@ -59,17 +59,23 @@ public class DialogDataMessageImpl extends UnicastRemoteObject implements Dialog
 
     @Override
     public void prepare() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for (DialogDataMessage value : dialogDataMessages.values()) {
+            value.prepare();
+        }
     }
 
     @Override
     public void commit() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for (DialogDataMessage value : dialogDataMessages.values()) {
+            value.commit();
+        }
     }
 
     @Override
-    public void callback() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void rollback() throws RemoteException {
+        for (DialogDataMessage value : dialogDataMessages.values()) {
+            value.rollback();
+        }
     }
 
     public Map<String, DialogDataMessage> getDialogDataMessages() {
