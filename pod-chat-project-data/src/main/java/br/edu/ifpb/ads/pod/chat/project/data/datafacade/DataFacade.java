@@ -12,15 +12,15 @@ import java.io.FileNotFoundException;
  * @author Wensttay de Sousa Alencar <yattsnew@gmail.com>
  * @date 18/05/2017, 07:28:30
  */
-public interface DataFacade {
+public interface DataFacade{
+    
+    public boolean checkIfExistData(String fileName) throws FileNotFoundException;
 
-    public boolean checkIfExistData(String fileName);
-
-    public void createANewFile(String fileName, String content);
+    public void createANewFile(String fileName, String content) throws FileNotFoundException;
     
-    public void createIfNotExistData(String fileName);
+    public void createIfNotExistData(String fileName) throws FileNotFoundException;
     
-    public void updateMetada(String oldFileName, String newContent) throws FileNotFoundException ;
+    public void updateMetada(String oldFileName, String newContent) throws FileNotFoundException;
     
-    public String getContent(String fileName)  throws FileNotFoundException ;
+    public String getContent(String fileName) throws FileNotFoundException;
 }

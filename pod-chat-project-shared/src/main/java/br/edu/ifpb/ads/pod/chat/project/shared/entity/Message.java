@@ -28,6 +28,10 @@ public class Message implements Serializable, Comparable<Message> {
         this.userFromId = userFromId;
         this.chatId = chatId;
     }
+
+    public Message(String id) {
+        this.id = id;
+    }
     
     public LocalDateTime getCreatedLocalDateTime(){
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(createdTime), ZoneId.systemDefault());

@@ -1,5 +1,8 @@
 package br.edu.ifpb.ads.pod.chat.project.data;
 
+import br.edu.ifpb.ads.pod.chat.project.data.datafacade.DropBoxDataFacade;
+import br.edu.ifpb.ads.pod.chat.project.data.datafacade.GoogleDriveDataFacade;
+import br.edu.ifpb.ads.pod.chat.project.data.datafacade.TxtDataFacade;
 import br.edu.ifpb.ads.pod.chat.project.data.dds.DialogDataChatImpl;
 import br.edu.ifpb.ads.pod.chat.project.data.dds.DialogDataMessageImpl;
 import br.edu.ifpb.ads.pod.chat.project.data.dds.DialogDataNotificationImpl;
@@ -14,13 +17,13 @@ import br.edu.ifpb.ads.pod.chat.project.shared.dialog.DialogDataChat;
 import br.edu.ifpb.ads.pod.chat.project.shared.dialog.DialogDataMessage;
 import br.edu.ifpb.ads.pod.chat.project.shared.dialog.DialogDataNotification;
 import br.edu.ifpb.ads.pod.chat.project.shared.dialog.DialogDataUser;
-import java.rmi.AccessException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.security.GeneralSecurityException;
 
 /**
  *
@@ -34,18 +37,32 @@ public class Main {
     public static DialogDataMessageImpl dialogDataMessage;
     public static DialogDataNotificationImpl dialogDataNotification;
     
-    public static void main(String[] args) {
+    public static DropBoxDataFacade dropBoxDataFacade;
+    public static GoogleDriveDataFacade googleDriveDataFacade;
+    public static TxtDataFacade txtDataFacade;
+    
+    public static DialogDataUser dataUserGD;
+    public static DialogDataChat dataChatGD;
+    public static DialogDataMessage dataMessageGD;
+    public static DialogDataNotification dataNotificationTXT;
+    public static DialogDataNotification dataNotificationDB;
+    
+    public static void main(String[] args) throws IOException, FileNotFoundException, GeneralSecurityException {
         try {
             dialogDataUser = new DialogDataUserImpl();
             dialogDataChat = new DialogDataChatImpl();
             dialogDataMessage = new DialogDataMessageImpl();
             dialogDataNotification = new DialogDataNotificationImpl();
             
-            DialogDataUser dataUserGD = new DialogDataUserGDImpl();
-            DialogDataChat dataChatGD = new DialogDataChatGDImpl();
-            DialogDataMessage dataMessageGD = new DialogDataMessageGDImpl();
-            DialogDataNotification dataNotificationTXT = new DialogDataNotificationTXTImpl();
-            DialogDataNotification dataNotificationDB = new DialogDataNotificationDBImpl();
+            dropBoxDataFacade = new DropBoxDataFacade();
+            googleDriveDataFacade = new GoogleDriveDataFacade();
+            txtDataFacade = new TxtDataFacade();
+            
+            dataUserGD = new DialogDataUserGDImpl(googleDriveDataFacade);
+            dataChatGD = new DialogDataChatGDImpl(googleDriveDataFacade);
+            dataMessageGD = new DialogDataMessageGDImpl(googleDriveDataFacade);
+            dataNotificationTXT = new DialogDataNotificationTXTImpl(txtDataFacade);
+            dataNotificationDB = new DialogDataNotificationDBImpl(dropBoxDataFacade);
            
             dialogDataUser.addDialogDataChat("googleDrive", dataUserGD);
             dialogDataChat.addDialogDataChat("googleDrive", dataChatGD);

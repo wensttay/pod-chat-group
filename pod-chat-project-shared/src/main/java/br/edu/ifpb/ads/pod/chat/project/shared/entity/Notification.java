@@ -15,6 +15,10 @@ public class Notification implements Serializable {
     private String userToId;
     private boolean delivered;
 
+    public Notification(String id) {
+        this.id = id;
+    }
+
     public Notification(Message message, String userToId) {
         this.message = message;
         this.userToId = userToId;

@@ -12,7 +12,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
@@ -24,21 +24,24 @@ import org.apache.commons.io.IOUtils;
  */
 public class DropBoxDataFacade implements DataFacade {
 
-    private String DROPBOX_ACCOUNT_TOKEN = "";
+    private String DROPBOX_ACCOUNT_TOKEN = "BsoOqz8TTFAAAAAAAAABj5uEVF6u0qXCiRWlJGRtUXFxVNgreaoBvMpo3XrKLiaq";
     private DbxClientV2 dbClient;
 
     public DropBoxDataFacade() {
-        //
-        // Armazenar variaveis em Configs ...
-        //
-        DbxRequestConfig config = new DbxRequestConfig("dropbox/java-tutorial", "en_US");
-        dbClient = new DbxClientV2(config, DROPBOX_ACCOUNT_TOKEN);
+        initService();
     }
 
-    private Metadata getMetadataByFilename(String fileName) throws FileNotFoundException, DbxException {
+    private void initService() {
+        //
+        // Colocar informações no CONFIGS
+        //
+        DbxRequestConfig config = new DbxRequestConfig("dropbox/pod-chat-project", "en_US");
+        dbClient = new DbxClientV2(config, DROPBOX_ACCOUNT_TOKEN);
+    }
+    
+    private Metadata getFileByName(String fileName) throws FileNotFoundException, DbxException { 
         try {
-            Metadata metadata = dbClient.files().getMetadata(File.separator + fileName);
-            return metadata;
+            return dbClient.files().getMetadata(File.separator + fileName);
         } catch (GetMetadataErrorException ex) {
             throw new FileNotFoundException("The file "
                     + fileName + " doesn't exists!");
@@ -46,9 +49,9 @@ public class DropBoxDataFacade implements DataFacade {
     }
 
     @Override
-    public boolean checkIfExistData(String fileName) {
+    public boolean checkIfExistData(String fileName) throws FileNotFoundException {
         try {
-            getMetadataByFilename(fileName);
+            getFileByName(fileName);
         } catch (FileNotFoundException | DbxException ex) {
             return true;
         }
@@ -56,14 +59,14 @@ public class DropBoxDataFacade implements DataFacade {
     }
 
     @Override
-    public void createIfNotExistData(String fileName) {
+    public void createIfNotExistData(String fileName) throws FileNotFoundException {
         if (!checkIfExistData(fileName)) {
-            createANewFile(fileName, new Gson().toJson(new ArrayList<>()));
+            createANewFile(fileName, new Gson().toJson(Collections.EMPTY_LIST));
         }
     }
 
     @Override
-    public void createANewFile(String fileName, String content) {
+    public void createANewFile(String fileName, String content) throws FileNotFoundException {
         try {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes());
             try {
@@ -84,7 +87,7 @@ public class DropBoxDataFacade implements DataFacade {
         ByteArrayInputStream inputStream
                 = new ByteArrayInputStream(newContent.getBytes());
         try {
-            getMetadataByFilename(oldFileName);
+            getFileByName(oldFileName);
             dbClient.files()
                     .uploadBuilder(File.separator + oldFileName)
                     .withMode(WriteMode.OVERWRITE)
@@ -98,7 +101,7 @@ public class DropBoxDataFacade implements DataFacade {
     @Override
     public String getContent(String fileName) throws FileNotFoundException {
         try {
-            getMetadataByFilename(fileName);
+            getFileByName(fileName);
             InputStream inputStream = dbClient.files().download(File.separator + fileName)
                     .getInputStream();
             byte[] bytes = IOUtils.toByteArray(inputStream);
